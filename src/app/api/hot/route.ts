@@ -16,81 +16,79 @@ function sanitizeTitle(title: string): string {
     .trim();
 }
 
-/** 用 DeepSeek 对一批标题批量分类 */
-async function classifyWithAI(titles: string[]): Promise<string[]> {
+const SENTIMENT_KEYS = ["好奇", "关切", "兴奋", "焦虑", "平静"];
+
+/** 用 DeepSeek 对一批标题批量分类 + 情绪 */
+async function classifyWithAI(titles: string[]): Promise<{ categories: string[]; sentiments: string[] }> {
+  const empty = { categories: titles.map(() => "其他"), sentiments: titles.map(() => "平静") };
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
     console.warn("DEEPSEEK_API_KEY not set, falling back to keyword classification");
-    return titles.map(() => "其他");
+    return empty;
   }
 
-  const prompt = `将以下热搜标题分类到最匹配的领域。只能从以下类别中选择：${CATEGORY_KEYS.join("、")}、其他。
+  const prompt = `对以下每条热搜标题，同时输出【领域分类】和【公众情绪】。格式为：领域名|情绪名
 
-规则：
-- 财经：股票、基金、经济、货币政策、房价、企业财报、商业等
-- 科技：AI、芯片、互联网公司、数码产品、航天、新能源等
-- 教育：高考、大学、考研、学校、留学、考试、公务员等
-- 游戏：电子游戏、电竞、游戏产业、动漫二次元、漫展等
-- 影视：电影、电视剧、综艺节目、纪录片、短剧等
-- 音乐：歌曲、演唱会、歌手、乐队、音乐节等
-- 娱乐：明星八卦、网红、搞笑段子、粉丝追星等（注意：游戏/影视/音乐有独立分类）
-- 美食：烹饪、餐厅、小吃、饮食文化、食品安全等
-- 时尚：穿搭、美妆、潮流、奢侈品、减肥塑形等
-- 萌宠：猫狗宠物、野生动物、动物趣闻等
-- 体育：足球篮球等赛事、运动员、健身、马拉松等
-- 汽车：汽车、新能源车、驾驶、驾照考试、油价等
-- 健康：医疗、疾病、养生、心理健康、医美整容、疫情等
-- 国际：外国政治、国际关系、外交、战争、移民等
-- 社会：政策法规、公共安全、民生、交通、环保、天气灾害等
-- 科普：科学、历史、人文、冷知识、哲学心理学等
-- 其他：无法归入以上任何类别的内容
+领域只能从以下选择：${CATEGORY_KEYS.join("、")}、其他。
+情绪只能从以下选择：${SENTIMENT_KEYS.join("、")}
 
-请严格按顺序输出每条的类别，每行一个，不要编号、不要解释，只输出类别名。
+情绪定义：
+- 好奇：新发现、新知识、探索未知、科技突破、科普趣闻
+- 关切：民生问题、政策变化、公共安全、社会新闻、国际局势
+- 兴奋：好消息、成就、突破、娱乐八卦、体育赛事、明星动态
+- 焦虑：负面事件、灾害、冲突、经济下行、健康威胁、争议
+- 平静：中性信息、常规报道、生活类话题，无明显情绪倾向
+
+请严格按顺序输出，每行一个，格式：领域名|情绪名。不要编号、不要解释。
 
 ${titles.map((t, i) => `${i + 1}. ${t}`).join("\n")}`;
 
   try {
     const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model: "deepseek-chat",
         messages: [
-          { role: "system", content: "你是一个中文热搜分类助手。只输出类别名，每行一个。不做任何解释。" },
+          { role: "system", content: "你是中文热搜分析助手。只输出每行的领域|情绪，不做解释。" },
           { role: "user", content: prompt },
         ],
         temperature: 0,
-        max_tokens: 500,
+        max_tokens: 800,
       }),
       signal: AbortSignal.timeout(15000),
     });
 
     if (!res.ok) {
       console.error(`DeepSeek API error: ${res.status} ${res.statusText}`);
-      return titles.map(() => "其他");
+      return empty;
     }
 
-    const json = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
+    const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     const text = json?.choices?.[0]?.message?.content ?? "";
     const lines = text.trim().split("\n").map((l) => l.trim()).filter(Boolean);
 
-    // 匹配到有效的类别
     const validCats = [...CATEGORY_KEYS, "其他"];
-    return titles.map((_, i) => {
-      const raw = lines[i] ?? "其他";
-      for (const cat of validCats) {
-        if (raw.includes(cat)) return cat;
-      }
-      return "其他";
-    });
+    const categories: string[] = [];
+    const sentiments: string[] = [];
+
+    for (let i = 0; i < titles.length; i++) {
+      const raw = lines[i] ?? "其他|平静";
+      const parts = raw.split("|").map(s => s.trim());
+      // 解析领域
+      let cat = "其他";
+      for (const vc of validCats) { if (parts[0]?.includes(vc)) { cat = vc; break; } }
+      categories.push(cat);
+      // 解析情绪
+      let sent = "平静";
+      for (const sk of SENTIMENT_KEYS) { if (parts[1]?.includes(sk)) { sent = sk; break; } }
+      sentiments.push(sent);
+    }
+
+    return { categories, sentiments };
   } catch (e) {
     console.error("DeepSeek classification failed:", (e as Error).message);
-    return titles.map(() => "其他");
+    return empty;
   }
 }
 
@@ -124,16 +122,20 @@ export async function GET(request: Request) {
     }
   }
 
-  // AI 分类（使用已 sanitize 的标题）
+  // AI 分类 + 情绪（使用已 sanitize 的标题）
   const titles = allTitles.map((t) => t.title);
-  const categories = await classifyWithAI(titles);
+  const { categories, sentiments } = await classifyWithAI(titles);
 
-  // 回填分类到各 item
+  // 回填分类和情绪到各 item
   for (let i = 0; i < allTitles.length; i++) {
     const { platform, index } = allTitles[i];
     const pdata = data.platforms[platform] as PlatformData;
     if (pdata?.items[index]) {
-      pdata.items[index] = { ...pdata.items[index], category: categories[i] ?? "其他" };
+      pdata.items[index] = {
+        ...pdata.items[index],
+        category: categories[i] ?? "其他",
+        sentiment: sentiments[i] ?? "平静",
+      };
     }
   }
 

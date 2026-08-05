@@ -1,50 +1,87 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caveat:wght@700&family=Orbitron:wght@500&display=swap");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* ── 设计 Token ──────────────────────────────── */
+/* ── 设计 Token — 老式中文报纸 ──────────────── */
 @theme {
-  --color-surface-base: #060912;
-  --color-surface-card: #0d1120;
-  --color-surface-card-hover: #11172a;
-  --color-surface-elevated: #151b30;
-  --color-surface-overlay: #1a2038;
+  /* 纸色系 */
+  --color-paper: #F5F0E8;
+  --color-paper-light: #FAF7F0;
+  --color-paper-dark: #EDE8DC;
+  --color-paper-warm: #F0EAD8;
+  --color-paper-overlay: #E8E2D0;
 
-  --color-border-subtle: rgba(255, 255, 255, 0.04);
-  --color-border-default: rgba(255, 255, 255, 0.07);
-  --color-border-accent: rgba(255, 255, 255, 0.12);
+  /* 墨水色系 */
+  --color-ink: #2C2416;
+  --color-ink-light: #5C4F3D;
+  --color-ink-faint: #8C7F6B;
 
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-tertiary: #64748b;
-  --color-text-muted: #475569;
+  /* 朱红（克制使用） */
+  --color-vermilion: #C0392B;
+  --color-vermilion-dark: #8B1E1A;
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.25rem;
-  --radius-pill: 9999px;
+  /* 金色点缀 */
+  --color-gold: #B8860B;
+  --color-gold-light: #D4A843;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.5);
+  /* 墨线边框 */
+  --color-border-ink: rgba(44, 36, 22, 0.10);
+  --color-border-rule: rgba(44, 36, 22, 0.18);
+  --color-border-vermilion: rgba(192, 57, 43, 0.25);
+
+  /* -- 保留旧名（兼容博客/导航）-- */
+  --color-surface-base: #FAF7F0;
+  --color-surface-card: #F5F0E8;
+  --color-surface-card-hover: #EDE8DC;
+  --color-surface-elevated: #F0EAD8;
+  --color-surface-overlay: #E8E2D0;
+
+  --color-border-subtle: rgba(44, 36, 22, 0.08);
+  --color-border-default: rgba(44, 36, 22, 0.15);
+  --color-border-accent: rgba(44, 36, 22, 0.22);
+
+  --color-text-primary: #2C2416;
+  --color-text-secondary: #5C4F3D;
+  --color-text-tertiary: #8C7F6B;
+  --color-text-muted: #A89880;
+
+  /* 直角报纸风 */
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+  --radius-2xl: 6px;
+  --radius-pill: 2px;
+
+  /* 纸墨阴影 */
+  --shadow-xs: 0 1px 2px rgba(44, 36, 22, 0.04);
+  --shadow-sm: 0 1px 3px rgba(44, 36, 22, 0.06);
+  --shadow-md: 0 2px 8px rgba(44, 36, 22, 0.08);
+  --shadow-lg: 0 4px 16px rgba(44, 36, 22, 0.10);
+
+  /* 字体 */
+  --font-serif: "Noto Serif SC", "Source Han Serif SC", "SimSun", "STSong", "Songti SC", serif;
+  --font-kaishu: "ZCOOL XiaoWei", "Ma Shan Zheng", "KaiTi", "STKaiti", "楷体", serif;
+  --font-sans: "Noto Serif SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 body {
-  background: var(--color-surface-base);
-  color: var(--color-text-primary);
-  font-family: "Inter", "PingFang SC", "Microsoft YaHei", Arial, Helvetica, sans-serif;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── 自定义滚动条 ────────────────────────────── */
+/* ── 纸纹背景 ────────────────────────────────── */
+.bg-newspaper {
+  background-color: var(--color-paper);
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
 
-/* 全局细滚动条 — 粉紫胶囊 */
+/* ── 自定义滚动条 — 墨色细条 ────────────────── */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
   background: transparent;
 }
 ::-webkit-scrollbar-track {
@@ -52,203 +89,183 @@ body {
   margin: 4px 0;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(200, 170, 230, 0.35);
-  border-radius: 10px;
+  background: rgba(44, 36, 22, 0.25);
+  border-radius: 2px;
   min-height: 30px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(210, 180, 240, 0.60);
+  background: rgba(44, 36, 22, 0.40);
 }
 
-/* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(200, 170, 230, 0.35) transparent;
+  scrollbar-color: rgba(44, 36, 22, 0.25) transparent;
 }
 
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
 
-/* ── 表面工具类 ──────────────────────────────── */
+/* ── 报纸排版工具类 ───────────────────────────── */
 
+/* 报纸分区：纸色底 + 墨线边框 */
+.section-paper {
+  background: var(--color-paper-light);
+  border: 1px solid var(--color-border-rule);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-paper-interactive {
+  background: var(--color-paper-light);
+  border: 1px solid var(--color-border-rule);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.section-paper-interactive:hover {
+  border-color: var(--color-ink);
+}
+
+/* 弹出面板：纸色 */
+.popover-paper {
+  background: var(--color-paper);
+  border: 1px solid var(--color-border-rule);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── 报纸横线 ────────────────────────────────── */
+.rule-thick {
+  border: none;
+  border-top: 2px solid var(--color-ink);
+}
+.rule-thin {
+  border: none;
+  border-top: 1px solid var(--color-border-rule);
+}
+.rule-double {
+  border: none;
+  border-top: 3px double var(--color-border-rule);
+}
+
+/* ── 朱红文字/边框 ───────────────────────────── */
+.text-vermilion {
+  color: var(--color-vermilion);
+}
+.text-ink-faint {
+  color: var(--color-ink-faint);
+}
+.text-ink-light {
+  color: var(--color-ink-light);
+}
+
+/* ── 报纸边框 ────────────────────────────────── */
+.frame-ink {
+  border: 2px solid var(--color-border-rule);
+  border-top: 3px solid var(--color-ink);
+  border-bottom: 3px solid var(--color-ink);
+}
+
+/* ── 兼容旧类名（博客/导航仍在使用）───────────── */
 .card-glass {
-  background: rgba(13, 17, 32, 0.65);
-  backdrop-filter: blur(24px) saturate(1.15);
-  -webkit-backdrop-filter: blur(24px) saturate(1.15);
-  border: 1px solid var(--color-border-subtle);
+  background: var(--color-paper-light);
+  border: 1px solid var(--color-border-rule);
   box-shadow: var(--shadow-sm);
 }
 
 .card-glass-interactive {
-  background: rgba(13, 17, 32, 0.65);
-  backdrop-filter: blur(24px) saturate(1.15);
-  -webkit-backdrop-filter: blur(24px) saturate(1.15);
-  border: 1px solid var(--color-border-subtle);
+  background: var(--color-paper-light);
+  border: 1px solid var(--color-border-rule);
   box-shadow: var(--shadow-xs);
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .card-glass-interactive:hover {
-  background: rgba(17, 23, 42, 0.72);
-  border-color: var(--color-border-accent);
+  background: var(--color-paper-dark);
+  border-color: var(--color-ink);
   box-shadow: var(--shadow-md);
 }
 
-/* 博客卡片：无模糊，干净半透明 */
 .card-blog {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  background: var(--color-paper-light);
+  border: 1px solid var(--color-border-subtle);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .card-blog:hover {
-  background: rgba(0, 0, 0, 0.35);
-  border-color: rgba(251, 191, 36, 0.15);
-  box-shadow: 0 0 24px rgba(251, 191, 36, 0.06);
+  background: var(--color-paper-dark);
+  border-color: rgba(192, 57, 43, 0.15);
+  box-shadow: 0 0 24px rgba(192, 57, 43, 0.06);
 }
 
 .popover-surface {
-  background: rgba(21, 27, 48, 0.92);
-  backdrop-filter: blur(20px) saturate(1.2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  border: 1px solid var(--color-border-default);
-  box-shadow: var(--shadow-lg);
+  background: var(--color-paper);
+  border: 1px solid var(--color-border-rule);
+  box-shadow: var(--shadow-md);
 }
 
-/* ── 入场动画 ────────────────────────────────── */
+/* ── 入场动画（保留核心，去掉科幻类）─────────── */
 
 @keyframes header-slide-down {
-  0%   { opacity: 0; transform: translateY(-16px); }
+  0%   { opacity: 0; transform: translateY(-12px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes card-scale-in {
-  0%   { opacity: 0; transform: scale(0.96) translateY(12px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-@keyframes item-slide-up {
-  0%   { opacity: 0; transform: translateY(12px); }
+  0%   { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ── 持续动画 ────────────────────────────────── */
+@keyframes item-slide-up {
+  0%   { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
 
+@keyframes popover-in {
+  0%   { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ink-reveal {
+  0%   { opacity: 0; filter: blur(2px); }
+  100% { opacity: 1; filter: blur(0); }
+}
+
+/* ── 工具类 ──────────────────────────────────── */
+.animate-spin-slow {
+  animation: spin-slow 4s linear infinite;
+}
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
 
-@keyframes shimmer {
-  0%   { transform: translateX(-100%) rotate(25deg); }
-  100% { transform: translateX(100%) rotate(25deg); }
-}
-
-@keyframes breathe {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50%      { opacity: 1;   transform: scale(1.04); }
-}
-
-@keyframes nebula-drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25%      { transform: translate(8px, -5px) scale(1.02); }
-  50%      { transform: translate(-3px, 6px) scale(0.98); }
-  75%      { transform: translate(-7px, -3px) scale(1.01); }
-}
-
-@keyframes popover-in {
-  0%   { opacity: 0; transform: translateY(-8px) scale(0.96); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* ── 工具类 ──────────────────────────────────── */
-
-.animate-spin-slow {
-  animation: spin-slow 4s linear infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 1.5s ease-in-out infinite;
-  overflow: hidden;
-}
-
 .animate-header-in {
-  animation: header-slide-down 0.5s ease-out both;
+  animation: header-slide-down 0.4s ease-out both;
 }
 
 .animate-card-in {
   opacity: 0;
-  animation: card-scale-in 0.5s ease-out forwards;
+  animation: card-scale-in 0.4s ease-out forwards;
 }
 
 .animate-item-in {
   opacity: 0;
-  animation: item-slide-up 0.4s ease-out forwards;
+  animation: item-slide-up 0.3s ease-out forwards;
 }
 
 .animate-popover-in {
-  animation: popover-in 0.2s ease-out both;
+  animation: popover-in 0.15s ease-out both;
 }
 
-.animate-nebula-drift {
-  animation: nebula-drift 12s ease-in-out infinite;
+.animate-ink-reveal {
+  animation: ink-reveal 0.4s ease-out both;
 }
 
-/* ── 时钟光环动画 ────────────────────────────── */
-
-@keyframes orb-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-@keyframes orb-spin-reverse {
-  from { transform: rotate(360deg); }
-  to   { transform: rotate(0deg); }
-}
-.animate-orb-outer {
-  animation: orb-spin 20s linear infinite;
-}
-.animate-orb-inner {
-  animation: orb-spin-reverse 12s linear infinite;
+/* 搜索高亮（报纸版：浅朱红底） */
+.search-highlight {
+  background: rgba(192, 57, 43, 0.12);
+  color: var(--color-vermilion-dark);
+  border-radius: 1px;
+  padding: 0 1px;
 }
 
-@keyframes radar-pulse {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50%      { opacity: 0.7; transform: scale(1.03); }
-}
-
-/* ── 星点闪烁（空状态） ──────────────────────── */
-
-@keyframes star-twinkle {
-  0%, 100% { opacity: 0.2; transform: scale(0.8); }
-  50%      { opacity: 0.8; transform: scale(1.2); }
-}
-
-/* ── 色轮旋转 ────────────────────────────────── */
-
-@keyframes wheel-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-.animate-wheel {
-  animation: wheel-spin 15s linear infinite;
-}
-
-/* ── 背景图淡入 ────────────────────────────── */
-
-@keyframes bg-fade-in {
-  0%   { opacity: 0; transform: scale(1.02); }
-  100% { opacity: 1; transform: scale(1); }
-}
-.animate-bg-fade-in {
-  animation: bg-fade-in 0.4s ease-out both;
-}
-
-/* ── 二次元流光边框 ─────────────────────────── */
-
-@keyframes flow-border {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+/* ── 保留星闻需要的装饰 ────────────────────────── */
 .anime-glow {
   position: relative;
   z-index: 0;
@@ -256,28 +273,153 @@ body {
 .anime-glow::before {
   content: "";
   position: absolute;
-  inset: -2px;
+  inset: -1px;
   z-index: -1;
   border-radius: inherit;
-  background: linear-gradient(135deg,
-    rgba(255,140,190,0.35), rgba(170,150,255,0.35),
-    rgba(120,200,240,0.35), rgba(255,180,140,0.35),
-    rgba(255,150,210,0.35), rgba(255,140,190,0.35));
-  background-size: 300% 300%;
+  background: linear-gradient(135deg, var(--color-vermilion), var(--color-ink-light), var(--color-vermilion));
+  background-size: 200% 200%;
   animation: flow-border 4s ease infinite;
-  filter: blur(6px);
-  opacity: 0.6;
+  filter: blur(2px);
+  opacity: 0.3;
 }
 
-@keyframes flow-sparkle {
-  0%, 100% { opacity: 0.4; }
-  50%      { opacity: 1; }
+@keyframes flow-border {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* 搜索高亮 */
-.search-highlight {
-  background: rgba(255, 200, 50, 0.25);
-  color: #ffe484;
+/* ── THE DAILY FLOW 变量别名 ────────────────── */
+:root {
+  --paper: var(--color-paper);
+  --paper-light: var(--color-paper-light);
+  --paper-dark: var(--color-paper-dark);
+  --paper-warm: var(--color-paper-warm);
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-ink-light);
+  --ink-dim: var(--color-ink-faint);
+  --accent-red: var(--color-vermilion);
+  --accent-gold: var(--color-gold);
+  --accent-teal: #1A7A7A;
+  --border-rule: rgba(44, 36, 22, 0.18);
+  --border-subtle: rgba(44, 36, 22, 0.08);
+}
+
+/* ── THE DAILY FLOW 面板 ────────────────────── */
+.panel {
+  background: var(--paper-light);
+  border: 1px solid var(--border-rule);
   border-radius: 2px;
-  padding: 0 1px;
 }
+.panel-tight {
+  background: var(--paper-light);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1px;
+}
+
+/* ── 分割线 (覆盖旧版) ──────────────────────── */
+.rule {
+  background: linear-gradient(90deg, transparent, var(--border-rule), transparent);
+  height: 1px; width: 100%;
+}
+.rule-solid {
+  background: var(--border-rule);
+  height: 1px; width: 100%;
+}
+
+/* ── 悬停 ──────────────────────────────────── */
+.item-hover {
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.item-hover:hover {
+  background: var(--paper-dark);
+}
+.item-hover:hover .title-hover {
+  color: var(--accent-red);
+}
+
+/* ── 字体 ──────────────────────────────────── */
+.font-display {
+  font-family: "Playfair Display", "Noto Serif SC", Georgia, serif;
+  letter-spacing: -0.01em;
+}
+.font-serif-cn {
+  font-family: "Noto Serif SC", Georgia, serif;
+}
+.font-kaishu {
+  font-family: "Ma Shan Zheng", "ZCOOL XiaoWei", "KaiTi", cursive;
+}
+
+/* ── 排名数字 ───────────────────────────────── */
+.rank-num {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 700; line-height: 1;
+}
+
+/* ── LIVE 脉冲点 ────────────────────────────── */
+.live-dot {
+  display: inline-block; width: 7px; height: 7px;
+  border-radius: 999px; background: var(--accent-red);
+  position: relative;
+}
+.live-dot::after {
+  content: ""; position: absolute; inset: -4px;
+  border-radius: 999px; background: inherit;
+  opacity: 0.4; filter: blur(3px);
+  animation: pulseDot 2.2s ease-in-out infinite;
+}
+@keyframes pulseDot {
+  0%,100% { opacity: 0.2; transform: scale(0.9); }
+  50%     { opacity: 0.65; transform: scale(1.25); }
+}
+
+/* ── 进度条 ────────────────────────────────── */
+.bar-track {
+  overflow: hidden; border-radius: 2px;
+  background: var(--border-subtle);
+}
+.bar-fill {
+  height: 100%; border-radius: 2px;
+  background: var(--ink);
+}
+.bar-fill.red  { background: var(--accent-red); }
+.bar-fill.gold { background: var(--accent-gold); }
+.bar-fill.teal { background: var(--accent-teal); }
+.bar-fill.mono { background: var(--ink-soft); }
+
+/* ── 徽章 ──────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 2px;
+  font-size: 10px; font-weight: 500;
+  border: 1px solid var(--border-rule);
+  background: var(--paper-dark);
+}
+
+/* ── 入场动画 ──────────────────────────────── */
+.reveal > * {
+  opacity: 0; transform: translateY(8px);
+}
+.reveal > *:nth-child(1)  { animation: rise 0.5s ease .04s forwards; }
+.reveal > *:nth-child(2)  { animation: rise 0.5s ease .08s forwards; }
+.reveal > *:nth-child(3)  { animation: rise 0.5s ease .12s forwards; }
+.reveal > *:nth-child(4)  { animation: rise 0.5s ease .16s forwards; }
+.reveal > *:nth-child(5)  { animation: rise 0.5s ease .20s forwards; }
+.reveal > *:nth-child(6)  { animation: rise 0.5s ease .24s forwards; }
+.reveal > *:nth-child(7)  { animation: rise 0.5s ease .28s forwards; }
+.reveal > *:nth-child(8)  { animation: rise 0.5s ease .32s forwards; }
+.reveal > *:nth-child(9)  { animation: rise 0.5s ease .36s forwards; }
+.reveal > *:nth-child(10) { animation: rise 0.5s ease .40s forwards; }
+@keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+/* ── 等宽数字 ──────────────────────────────── */
+.num { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+/* ── 时间线节点 ────────────────────────────── */
+.timeline-node { position: relative; }
+.timeline-node::before {
+  content: ""; position: absolute; left: 50%; top: 22px; bottom: -28px;
+  width: 1px; background: var(--border-rule);
+  transform: translateX(-0.5px);
+}
+.timeline-node:last-child::before { display: none; }

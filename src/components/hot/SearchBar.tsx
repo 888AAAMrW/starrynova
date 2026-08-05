@@ -17,7 +17,6 @@ export default function SearchBar({ items }: Props) {
   const [focused, setFocused] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiIds, setAiIds] = useState<string[] | null>(null);
-  const [aiQuery, setAiQuery] = useState(""); // 最后一次 AI 搜索的词
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -35,26 +34,15 @@ export default function SearchBar({ items }: Props) {
     return scored.slice(0, 20).map((s) => s.item);
   }, [items, query]);
 
-  // 查询变化时：重置 AI 结果 + 延迟发起 AI 搜索
   useEffect(() => {
     setAiIds(null);
     const q = query.trim();
     if (!q || q.length < 2) return;
-
-    // 清除之前的定时器
     if (timerRef.current) clearTimeout(timerRef.current);
-
-    // 400ms 后自动发起 AI 搜索
-    timerRef.current = setTimeout(() => {
-      doAISearch(q);
-    }, 400);
-
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    timerRef.current = setTimeout(() => { doAISearch(q); }, 400);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [query]);
 
-  // 合并结果：AI 优先
   const results = aiIds
     ? aiIds.map((id) => items.find((i) => `${i.platformId}:${i.rank}` === id)).filter(Boolean) as SearchableItem[]
     : fuzzyResults;
@@ -66,21 +54,13 @@ export default function SearchBar({ items }: Props) {
     const controller = new AbortController();
     abortRef.current = controller;
     setAiLoading(true);
-
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
-        signal: controller.signal,
-      });
-      if (!res.ok) return; // 静默失败，保留模糊结果
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: controller.signal });
+      if (!res.ok) return;
       const data = (await res.json()) as { results: string[] };
-      if (!controller.signal.aborted) {
-        setAiIds(data.results);
-        setAiQuery(q);
-      }
+      if (!controller.signal.aborted) setAiIds(data.results);
     } catch (e) {
-      if ((e as Error).name !== "AbortError") {
-        // 静默失败，模糊结果继续服务
-      }
+      if ((e as Error).name !== "AbortError") { /* 静默失败 */ }
     } finally {
       if (!controller.signal.aborted) setAiLoading(false);
     }
@@ -98,39 +78,23 @@ export default function SearchBar({ items }: Props) {
     return () => document.removeEventListener("mousedown", handler);
   }, [show]);
 
-  // ESC 关闭
+  // ESC / Ctrl+K
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setQuery("");
-        setFocused(false);
-        inputRef.current?.blur();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
-
-  // Ctrl+K / Cmd+K 打开搜索
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        inputRef.current?.focus();
-      }
+      if (e.key === "Escape") { setQuery(""); setFocused(false); inputRef.current?.blur(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); inputRef.current?.focus(); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
   return (
-    <div className="relative">
-      <div className="relative">
-        <svg
-          className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none transition-colors"
-          style={{ color: focused ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor"
-        >
+    <div className="relative max-w-xl mx-auto">
+      <div className="relative flex items-center">
+        {/* 搜索图标 — 报纸风放大镜 */}
+        <svg className="absolute left-0 w-3.5 h-3.5 pointer-events-none"
+          style={{ color: "var(--color-ink-faint)" }}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
         </svg>
@@ -140,102 +104,72 @@ export default function SearchBar({ items }: Props) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
-          placeholder="搜索热搜…"
-          className="w-48 md:w-56 pl-7.5 pr-3 py-1.5 text-xs rounded-lg transition-all duration-200 outline-none border"
+          placeholder="搜索今日热搜…"
+          className="w-full pl-5.5 pr-3 py-2 text-sm outline-none transition-colors"
           style={{
-            background: focused
-              ? "var(--color-surface-elevated)"
-              : "rgba(255,255,255,0.03)",
-            borderColor: focused
-              ? "var(--color-border-accent)"
-              : "rgba(255,255,255,0.06)",
-            color: "var(--color-text-primary)",
+            background: "transparent",
+            border: "none",
+            borderBottom: focused ? "2px solid var(--color-ink)" : "1px solid var(--color-border-rule)",
+            color: "var(--color-ink)",
+            fontFamily: "var(--font-serif)",
           }}
         />
         {query && (
           <button
             onClick={() => { setQuery(""); setFocused(false); inputRef.current?.blur(); }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-300"
+            className="absolute right-0 text-sm"
+            style={{ color: "var(--color-ink-faint)" }}
           >
             ✕
           </button>
-        )}
-        {!focused && !query && (
-          <kbd
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] px-1.5 py-0.5 rounded pointer-events-none hidden md:block"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              color: "var(--color-text-muted)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            ⌘K
-          </kbd>
         )}
       </div>
 
       {/* 结果面板 */}
       {show && (
-        <div
-          ref={panelRef}
-          className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-xl overflow-hidden animate-popover-in popover-surface max-h-80 overflow-y-auto scrollbar-thin"
-        >
+        <div ref={panelRef}
+          className="absolute left-0 right-0 top-full mt-1 z-50 max-h-80 overflow-y-auto animate-ink-reveal"
+          style={{
+            background: "var(--color-paper-light)",
+            border: "1px solid var(--color-border-rule)",
+            boxShadow: "var(--shadow-md)",
+          }}>
           {results.length === 0 ? (
-            <div className="px-4 py-8 text-center text-xs" style={{ color: "var(--color-text-muted)" }}>
+            <div className="px-4 py-8 text-center text-sm"
+              style={{ color: "var(--color-ink-faint)", fontFamily: "var(--font-serif)" }}>
               未找到相关热搜
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-2 px-3 py-2"
-                style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+              <div className="flex items-center gap-2 px-3 py-1.5"
+                style={{ borderBottom: "1px solid var(--color-border-rule)" }}>
                 <span className="text-[10px] uppercase tracking-wider flex-1"
-                  style={{ color: "var(--color-text-muted)" }}>
-                  {aiIds
-                    ? `AI 语义匹配 · ${results.length} 条`
-                    : aiLoading
-                      ? `即时搜索 · ${results.length} 条`
-                      : `搜索 · ${results.length} 条`}
+                  style={{ color: "var(--color-ink-faint)" }}>
+                  {aiIds ? `语义匹配 · ${results.length} 条`
+                    : aiLoading ? `即时搜索 · ${results.length} 条`
+                    : `搜索 · ${results.length} 条`}
                 </span>
                 {aiLoading && (
-                  <span className="flex items-center gap-1 text-[10px]"
-                    style={{ color: "#a78bfa" }}>
-                    <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    AI 正在理解…
+                  <span className="text-[10px]" style={{ color: "var(--color-ink-light)" }}>
+                    理解中…
                   </span>
                 )}
               </div>
               {results.map((item) => {
                 const meta = PLATFORM_META[item.platformId];
                 return (
-                  <a
-                    key={`${item.platformId}-${item.rank}`}
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <a key={`${item.platformId}-${item.rank}`}
+                    href={item.url} target="_blank" rel="noopener noreferrer"
                     onClick={() => { setQuery(""); setFocused(false); }}
-                    className="flex items-center gap-2.5 px-3 py-2 transition-all duration-150 hover:border-l-2 group"
-                    style={{
-                      borderLeft: "2px solid transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderLeftColor = meta.color;
-                      e.currentTarget.style.background = "var(--color-surface-elevated)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderLeftColor = "transparent";
-                      e.currentTarget.style.background = "transparent";
-                    }}
-                  >
+                    className="flex items-center gap-2.5 px-3 py-2 transition-colors hover:bg-[var(--color-paper-dark)]"
+                    style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
                     <span className="flex-shrink-0 text-xs">{meta.emoji}</span>
-                    <span className="flex-1 text-[13px] truncate group-hover:text-white transition-colors"
-                      style={{ color: "var(--color-text-secondary)" }}>
+                    <span className="flex-1 text-[13px] truncate"
+                      style={{ color: "var(--color-ink)", fontFamily: "var(--font-serif)" }}>
                       {highlightMatch(item.title, query)}
                     </span>
-                    <span className="flex-shrink-0 text-[10px] font-mono"
-                      style={{ color: "var(--color-text-muted)" }}>
+                    <span className="flex-shrink-0 text-[10px]"
+                      style={{ color: "var(--color-ink-faint)" }}>
                       #{item.rank}
                     </span>
                   </a>
@@ -249,82 +183,49 @@ export default function SearchBar({ items }: Props) {
   );
 }
 
-/**
- * 模糊匹配得分：
- * - 精确子串匹配 → 1000 分（最高）
- * - 字符按序出现（子序列匹配，如 "ai" 匹配 "人工智能AI"） → 基于紧凑度评分
- * - 不匹配 → 0
- */
+/* ── 模糊匹配（逻辑不变）─────────────────────── */
+
 function matchScore(title: string, query: string): number {
   const t = title.toLowerCase();
   const q = query.toLowerCase();
-
-  // 精确子串匹配 → 最高分（越靠前分越高）
   const exact = t.indexOf(q);
-  if (exact !== -1) {
-    return 1000 - exact;
-  }
-
-  // 子序列匹配（每个 query 字符在 title 中按序出现）
-  let ti = 0;
-  let first = -1;
-  let last = -1;
+  if (exact !== -1) return 1000 - exact;
+  let ti = 0, first = -1, last = -1;
   for (let qi = 0; qi < q.length; qi++) {
     const ch = q[qi];
-    // 跳过空格
     if (ch === " ") { first = first === -1 ? ti : first; continue; }
     const found = t.indexOf(ch, ti);
-    if (found === -1) return 0; // 有字符找不到 → 不匹配
+    if (found === -1) return 0;
     if (first === -1) first = found;
     last = found;
     ti = found + 1;
   }
-
-  // 匹配越紧凑（字符间距越小），分数越高
   const span = last - first + 1;
   const density = q.length / span;
   return Math.round(density * 500);
 }
 
-/** 在标题中高亮匹配的文字 */
 function highlightMatch(title: string, query: string): React.ReactNode {
   const t = title.toLowerCase();
   const q = query.toLowerCase();
-
-  // 先尝试精确匹配高亮
   const exact = t.indexOf(q);
   if (exact !== -1) {
     const before = title.slice(0, exact);
     const match = title.slice(exact, exact + q.length);
     const after = title.slice(exact + q.length);
-    return (
-      <>
-        {before}
-        <mark className="search-highlight">{match}</mark>
-        {after}
-      </>
-    );
+    return <>{before}<mark className="search-highlight">{match}</mark>{after}</>;
   }
-
-  // 子序列高亮：逐个字符高亮
   const result: React.ReactNode[] = [];
-  let ti = 0;
-  let keyIdx = 0;
+  let ti = 0, keyIdx = 0;
   for (let qi = 0; qi < q.length; qi++) {
     const ch = q[qi];
     if (ch === " ") continue;
     const found = t.indexOf(ch, ti);
     if (found === -1) break;
-    if (found > ti) {
-      result.push(<span key={keyIdx++}>{title.slice(ti, found)}</span>);
-    }
-    result.push(
-      <mark key={keyIdx++} className="search-highlight">{title.slice(found, found + 1)}</mark>
-    );
+    if (found > ti) result.push(<span key={keyIdx++}>{title.slice(ti, found)}</span>);
+    result.push(<mark key={keyIdx++} className="search-highlight">{title.slice(found, found + 1)}</mark>);
     ti = found + 1;
   }
-  if (ti < title.length) {
-    result.push(<span key={keyIdx++}>{title.slice(ti)}</span>);
-  }
+  if (ti < title.length) result.push(<span key={keyIdx++}>{title.slice(ti)}</span>);
   return <>{result}</>;
 }

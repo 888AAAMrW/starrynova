@@ -1,82 +1,73 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import type { TrendsResponse } from "@/lib/types";
 
-function timeAgo(ts: number): string {
-  const seconds = Math.floor((Date.now() - ts) / 1000);
-  if (seconds < 5) return "刚刚";
-  if (seconds < 60) return `${seconds} 秒前`;
-  const mins = Math.floor(seconds / 60);
-  if (mins < 60) return `${mins} 分钟前`;
-  const hours = Math.floor(mins / 60);
-  return `${hours} 小时前`;
-}
+export default function Header({ data, derived }: { data: TrendsResponse | null | undefined; derived: any }) {
+  const ts = data?.updatedAt ? new Date(data.updatedAt) : null;
+  const dateStr = ts ? ts.toLocaleString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" }) : "";
+  const timeStr = ts ? ts.toLocaleString("zh-CN", { hour: "2-digit", minute: "2-digit" }) : "—";
 
-export default function Header({
-  updatedAt,
-  onRefresh,
-  loading,
-}: {
-  updatedAt: number | null;
-  onRefresh: () => void;
-  loading: boolean;
-}) {
-  const [display, setDisplay] = useState("");
-
-  useEffect(() => {
-    if (!updatedAt) return;
-    setDisplay(timeAgo(updatedAt));
-    const id = setInterval(() => setDisplay(timeAgo(updatedAt)), 10000);
-    return () => clearInterval(id);
-  }, [updatedAt]);
+  const totalItems = derived?.all?.length ?? 0;
 
   return (
-    <header className="flex flex-col items-center gap-1.5 pt-6 pb-4 px-4 animate-header-in">
-      <a
-        href="https://starrynova.cc"
-        className="mb-1 text-xs tracking-wider transition-colors hover:text-gray-400"
-        style={{ color: "var(--color-text-muted)" }}
-      >
-        ← 返回星际基地
-      </a>
-      <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight flex items-center gap-2">
-        <span>🔥</span> 实时热搜聚合
-      </h1>
-      <p className="text-sm" style={{ color: "var(--color-text-tertiary)" }}>
-        七大主流平台 · 一站式实时热点追踪
-      </p>
-      <div className="flex items-center gap-3 mt-1.5">
-        {updatedAt && (
-          <span className="text-xs font-mono" style={{ color: "var(--color-text-muted)" }}>
-            更新于 {display}
+    <header className="px-6 pt-6 pb-4">
+      <div className="flex items-center justify-between text-[11px] tracking-wider uppercase" style={{ color: "var(--ink-dim)" }}>
+        <div className="flex items-center gap-5">
+          <span className="flex items-center gap-2">
+            <span className="live-dot" />
+            LIVE
           </span>
-        )}
-        <button
-          onClick={onRefresh}
-          disabled={loading}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full
-                     transition-all duration-200 disabled:opacity-50 border"
-          style={{
-            background: "var(--color-surface-elevated)",
-            borderColor: "var(--color-border-subtle)",
-            color: "var(--color-text-secondary)",
-          }}
-        >
-          <svg
-            className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          刷新
-        </button>
+          <span className="hidden sm:inline">相遇每一天 · 记录每一天</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span>实时采集 <span className="num font-bold" style={{ color: "var(--ink)" }}>{totalItems}</span> 条热搜</span>
+          <span className="hidden md:inline-flex items-center gap-2 px-2 py-0.5 border" style={{ borderColor: "var(--border-rule)" }}>
+            <span className="live-dot" />
+            WORLDWIDE · REAL-TIME EDITION
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-5 flex items-end justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <div className="flex items-start gap-2">
+            <div className="flex flex-col leading-none">
+              <span className="font-kaishu text-[11px] tracking-[0.32em]" style={{ color: "var(--ink-soft)" }}>FLOW</span>
+              <span className="inline-block w-2 h-2 mt-2" style={{ background: "var(--accent-red)" }} />
+            </div>
+            <span className="font-display text-[10px] tracking-[0.25em]" style={{ color: "var(--ink-dim)" }}>
+              THE DAILY FLOW
+            </span>
+          </div>
+        </div>
+
+        <h1 className="font-display font-black text-[clamp(36px,6vw,88px)] leading-[0.95] tracking-tight text-center flex-1 min-w-0"
+          style={{ color: "var(--ink)" }}>
+          THE DAILY FLOW
+        </h1>
+
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 border flex items-center justify-center" style={{ borderColor: "var(--border-rule)", background: "var(--paper-dark)" }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--ink-soft)" }}>
+              <circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 rule-double" />
+      <div className="mt-3 flex items-center justify-between gap-4 flex-wrap text-[13px]">
+        <div className="font-serif-cn text-[15px] tracking-wide" style={{ color: "var(--ink)" }}>
+          今日互联网日报 · {dateStr || "—"}
+        </div>
+        <div className="italic font-display text-[13px]" style={{ color: "var(--ink-dim)" }}>
+          — 记录每一个值得被世界看到的瞬间 —
+        </div>
+        <div className="flex items-center gap-3 text-[11px] uppercase tracking-widest" style={{ color: "var(--ink-dim)" }}>
+          <span>更新于 <span className="num font-bold" style={{ color: "var(--ink)" }}>{timeStr}</span></span>
+          <span className="hidden sm:inline">·</span>
+          <span className="hidden sm:inline">7 平台实时采集</span>
+        </div>
       </div>
     </header>
   );
