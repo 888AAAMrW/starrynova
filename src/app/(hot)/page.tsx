@@ -28,14 +28,14 @@ export default function Page() {
   return (
     <div className="max-w-[1600px] mx-auto px-4 md:px-6 pb-12">
       <Header data={data} derived={derived} />
-      <main className="grid grid-cols-12 gap-5">
-        <div className="col-span-12 lg:col-span-2 xl:col-span-[260px] xl:!col-auto w-full xl:w-[260px] order-2 lg:order-1 flex flex-col">
+      <main className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,7fr)_minmax(0,3fr)] gap-5">
+        <div className="order-2 lg:order-1 flex flex-col">
           <LeftSidebar derived={derived} />
         </div>
-        <div className="col-span-12 lg:col-span-7 xl:col-span-7 order-1 lg:order-2 flex flex-col">
+        <div className="order-1 lg:order-2 flex flex-col">
           <MainContent derived={derived} loading={!data && !error} error={error} />
         </div>
-        <div className="col-span-12 lg:col-span-3 xl:col-span-3 order-3 flex flex-col">
+        <div className="order-3 flex flex-col">
           <RightPanel derived={derived} loading={!data && !error} />
         </div>
       </main>
