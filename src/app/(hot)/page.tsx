@@ -28,7 +28,7 @@ export default function Page() {
   return (
     <div className="max-w-[1600px] mx-auto px-4 md:px-6 pb-12">
       <Header data={data} derived={derived} />
-      <main className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,7fr)_minmax(0,3fr)] gap-5">
+      <main className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,8fr)_minmax(0,4fr)] gap-5">
         <div className="order-2 lg:order-1 flex flex-col">
           <LeftSidebar derived={derived} />
         </div>
