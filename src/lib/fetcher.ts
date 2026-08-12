@@ -64,26 +64,46 @@ async function fetchWeibo(): Promise<PlatformData> {
 // ═══════════════════════════════════════════════════════════
 
 interface ZhihuRawItem {
-  target?: { id?: number; title?: string; url?: string };
+  target?: { id?: number | string; title?: string; url?: string };
   detail_text?: string;
+}
+
+/** api.zhihu.com 的 API 地址 → 可访问的网页地址 */
+function toZhihuWebUrl(item: ZhihuRawItem): string {
+  const target = item.target;
+  if (!target) return "";
+  if (target.url) {
+    if (target.url.includes("api.zhihu.com/questions")) {
+      return target.url.replace("api.zhihu.com/questions", "www.zhihu.com/question");
+    }
+    // 非问答类（讣告/公告等）是 article，网页版在专栏
+    if (target.url.includes("api.zhihu.com/articles")) {
+      return target.url.replace("api.zhihu.com/articles", "zhuanlan.zhihu.com/p");
+    }
+    return target.url;
+  }
+  if (target.id) return `https://www.zhihu.com/question/${target.id}`;
+  return "";
 }
 
 async function fetchZhihu(): Promise<PlatformData> {
   const data = (await safeFetch(
     "https://api.zhihu.com/topstory/hot-list?limit=50",
     "https://www.zhihu.com/",
-  )) as { data?: ZhihuRawItem[] };
+  )) as { data?: ZhihuRawItem[]; error?: { code?: number; message?: string } };
 
+  // 知乎反爬：HTTP 200 + {error} 错误体（如 40362），safeFetch 不会抛错，这里手动识别以触发备源
+  if (data?.error) {
+    throw new Error(`Zhihu blocked: ${data.error.code ?? ""} ${data.error.message ?? ""}`.trim());
+  }
+
+  // 只丢弃连 target 都没有的畸形项，保证任何有 target 的条目（问答/文章/公告）都保留原排名
   const items: HotItem[] = (data?.data ?? [])
-    .filter((item) => item?.target?.title)
+    .filter((item) => item?.target)
     .map((item, i) => ({
       rank: i + 1,
-      title: item.target!.title ?? "",
-      url: item.target!.url
-        ? item.target!.url.replace("api.zhihu.com/questions", "www.zhihu.com/question")
-        : item.target!.id
-          ? `https://www.zhihu.com/question/${item.target!.id}`
-          : "",
+      title: item.target?.title ?? "",
+      url: toZhihuWebUrl(item),
       hotScore: item.detail_text ?? null,
     }));
 
