@@ -57,8 +57,13 @@ export interface TaggedItem extends HotItem {
 
 export function parseHot(score: string | null): number {
   if (!score) return 0;
-  if (score.endsWith("亿")) return parseFloat(score) * 1e8;
-  if (score.endsWith("万") || score.endsWith("w")) return parseFloat(score) * 1e4;
-  if (score.endsWith("k")) return parseFloat(score) * 1e3;
-  return parseFloat(score) || 0;
+  // 提取数字+单位，兼容 "1152 万热度"、"2836万"、"1.2亿"、"123,456" 等带后缀格式
+  const m = score.replace(/,/g, "").match(/(\d+(?:\.\d+)?)\s*([亿万wWkK]?)/);
+  if (!m) return 0;
+  const n = parseFloat(m[1]) || 0;
+  const unit = m[2];
+  if (unit === "亿") return n * 1e8;
+  if (unit === "万" || unit === "w" || unit === "W") return n * 1e4;
+  if (unit === "k" || unit === "K") return n * 1e3;
+  return n;
 }

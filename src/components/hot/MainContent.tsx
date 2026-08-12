@@ -210,8 +210,9 @@ function PlatformTabs({ platformItems }: { platformItems: Record<string, TaggedI
             const h = parseHot(item.hotScore);
             const tagLabel = h > 5000000 ? "爆" : h > 1000000 ? "热" : item.rank <= 3 ? "新" : "";
             const rankColor = i === 0 ? "var(--accent-red)" : i === 1 ? "var(--accent-gold)" : i === 2 ? "var(--accent-teal)" : "var(--ink-dim)";
+            // key 只用 rank：切平台时复用 DOM 原地更新，避免重播入场动画导致列表跳动
             return (
-              <li key={`${active}-${item.rank}`} className="item-hover py-3 px-2 -mx-2 flex items-center gap-4 border-l-2 border-transparent reveal">
+              <li key={item.rank} className="item-hover py-3 px-2 -mx-2 flex items-center gap-4 border-l-2 border-transparent reveal">
                 <span className="rank-num text-[26px] w-9 shrink-0" style={{ color: rankColor }}>
                   {String(item.rank).padStart(2, "0")}
                 </span>
