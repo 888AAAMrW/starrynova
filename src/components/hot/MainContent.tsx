@@ -179,7 +179,7 @@ function PlatformTabs({ platformItems }: { platformItems: Record<string, TaggedI
         </div>
       </div>
 
-      {/* 平台切换标签 */}
+      {/* 平台切换标签 — flex-1 让按钮铺满整行，不左缩 */}
       <div className="flex items-center gap-1.5 flex-wrap mb-4">
         {platformIds.map((k) => {
           const meta = PLATFORM_META[k as PlatformId];
@@ -187,7 +187,7 @@ function PlatformTabs({ platformItems }: { platformItems: Record<string, TaggedI
           const isActive = active === k;
           return (
             <button key={k} onClick={() => { setActive(k); setExpanded(false); }}
-              className="px-2.5 py-1 text-[11.5px] border flex items-center gap-1.5 transition-all"
+              className="px-2.5 py-1 text-[11.5px] border flex flex-1 justify-center items-center gap-1.5 transition-all"
               style={{
                 color: isActive ? meta.color : "var(--ink-soft)",
                 background: isActive ? `${meta.color}10` : "transparent",
@@ -217,8 +217,8 @@ function PlatformTabs({ platformItems }: { platformItems: Record<string, TaggedI
                   {String(item.rank).padStart(2, "0")}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="title-hover text-[15px] font-medium truncate hover:text-[var(--accent-red)]" style={{ color: "var(--ink)" }}>
+                  <div className="flex items-center gap-2">
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="title-hover text-[15px] font-medium truncate min-w-0 hover:text-[var(--accent-red)]" style={{ color: "var(--ink)" }}>
                       {item.title}
                     </a>
                     {tagLabel && (
