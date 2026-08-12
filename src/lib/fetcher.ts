@@ -49,7 +49,7 @@ async function fetchWeibo(): Promise<PlatformData> {
     .map((item: WeiboRawItem, i: number) => ({
       rank: i + 1,
       title: item.word ?? "",
-      url: `https://www.baidu.com/s?wd=${encodeURIComponent(item.word ?? "")}`,
+      url: `https://s.weibo.com/weibo?q=${encodeURIComponent((item.word ?? "").replace(/#/g, ""))}`,
       hotScore:
         item.raw_hot != null ? formatHot(item.raw_hot)
         : item.num != null ? formatHot(item.num)
